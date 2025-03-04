@@ -31,7 +31,7 @@ class _PageTwoState extends State<PageTwo> {
                           bottomRight: Radius.circular(30),
                         ),
                         image: DecorationImage(
-                          image: AssetImage('assets/pagetwoone.jpg'), // Using local asset
+                          image: AssetImage('assets/pagetwoone.jpg'),
                           fit: BoxFit.cover,
                         ),
                       ),
@@ -170,7 +170,7 @@ class _PageTwoState extends State<PageTwo> {
                                   ClipRRect(
                                     borderRadius: BorderRadius.circular(25),
                                     child: Image.asset(
-                                      'assets/pagetwotwo.jpg', // Path to your asset image
+                                      'assets/pagetwotwo.jpg',
                                       height: 220,
                                       width: double.infinity,
                                       fit: BoxFit.cover,
@@ -333,7 +333,7 @@ class _PageTwoState extends State<PageTwo> {
                                   ClipRRect(
                                     borderRadius: BorderRadius.circular(25),
                                     child: Image.asset(
-                                      'assets/pagetwotwo.jpg', // Replace with your asset image path
+                                      'assets/pagetwotwo.jpg',
                                       height: 120,
                                       width: 150,
                                       fit: BoxFit.cover,
