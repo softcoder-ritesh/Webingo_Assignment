@@ -31,9 +31,7 @@ class _PageTwoState extends State<PageTwo> {
                           bottomRight: Radius.circular(30),
                         ),
                         image: DecorationImage(
-                          image: NetworkImage(
-                            'https://i.pinimg.com/736x/39/07/0a/39070aae56801ea6e85c853282fed3cb.jpg',
-                          ),
+                          image: AssetImage('assets/pagetwoone.jpg'), // Using local asset
                           fit: BoxFit.cover,
                         ),
                       ),
@@ -171,8 +169,8 @@ class _PageTwoState extends State<PageTwo> {
                                 children: [
                                   ClipRRect(
                                     borderRadius: BorderRadius.circular(25),
-                                    child: Image.network(
-                                      'https://cf.bstatic.com/xdata/images/hotel/max1024x768/345215565.jpg?k=d63b96ae35cd849d2332c1b565e52527161be54f7023ce4b1ab6a4508b5cef4b&o=&hp=1',
+                                    child: Image.asset(
+                                      'assets/pagetwotwo.jpg', // Path to your asset image
                                       height: 220,
                                       width: double.infinity,
                                       fit: BoxFit.cover,
@@ -334,8 +332,8 @@ class _PageTwoState extends State<PageTwo> {
                                 children: [
                                   ClipRRect(
                                     borderRadius: BorderRadius.circular(25),
-                                    child: Image.network(
-                                      'https://cf.bstatic.com/xdata/images/hotel/max1024x768/345215565.jpg?k=d63b96ae35cd849d2332c1b565e52527161be54f7023ce4b1ab6a4508b5cef4b&o=&hp=1',
+                                    child: Image.asset(
+                                      'assets/pagetwotwo.jpg', // Replace with your asset image path
                                       height: 120,
                                       width: 150,
                                       fit: BoxFit.cover,
