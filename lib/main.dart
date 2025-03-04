@@ -15,7 +15,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false, // Debug banner turned off
+      debugShowCheckedModeBanner: false,
       home: BlocProvider(
         create: (context) => NavigationBloc(),
         child: BlocBuilder<NavigationBloc, int>(
