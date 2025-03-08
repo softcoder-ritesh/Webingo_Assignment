@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:webingo_assignment/bloc/page1_bloc.dart';
+import 'package:webingo_assignment/bloc/page1_event.dart';
+import 'package:webingo_assignment/bloc/page1_state.dart';
 
 class FirstPage extends StatefulWidget {
   @override
@@ -7,27 +11,68 @@ class FirstPage extends StatefulWidget {
 }
 
 class _FirstPageState extends State<FirstPage> {
-  int _selectedIndex = 0;
+  int _selectedIndex = 3;
+  int _iconSelectedIndex = 0;
+  String _selectedDate = "2025-11-13";
+  final ScrollController _scrollController = ScrollController();
+
+
+  @override
+  void initState() {
+    super.initState();
+    context.read<UserPlanBloc>().add(FetchUserPlans(_selectedDate));
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xFFf6f6f6),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            _buildHeaderSection(),
-            _buildDailyChallengeCard(context),
-            _buildDateSelector(),
-            _buildYourPlanSection(context),
-          ],
-        ),
+      body: BlocBuilder<UserPlanBloc, UserPlanState>(
+        builder: (context, state) {
+          if (state is UserPlanLoading) {
+            return Center(child: CircularProgressIndicator());
+          } else if (state is UserPlanLoaded) {
+            return SingleChildScrollView(
+              child: Column(
+                children: [
+                  _buildHeaderSection(_selectedDate),
+                  _buildDailyChallengeCard(context),
+                  _buildDateSelector(),
+                  _buildYourPlanSection(context, state.userPlans),
+                ],
+              ),
+            );
+          } else if (state is UserPlanError) {
+            return Center(child: Text('Error: ${state.message}'));
+          } else {
+            return Center(child: Text('No data available'));
+          }
+        },
       ),
     );
   }
-
-  Widget _buildHeaderSection() {
-    final todayDate = DateTime.now();
+  final Map<String, dynamic> _staticFallbackPlan = {
+    'plans': [
+      {
+        'level': 'Medium',
+        'title': 'Plan Yoga',
+        'date': '2023-11-01',
+        'time': '07:00 AM',
+        'room': 'Room 101',
+        'trainer': 'John Doe',
+      },
+      {
+        'level': 'Light',
+        'title': 'Balance',
+        'date': '2023-11-01',
+        'time': '06:00 PM',
+        'room': 'Room 102',
+        'trainer': 'Jane Smith',
+      },
+    ],
+  };
+  Widget _buildHeaderSection(selectedDate) {
+    final todayDate = DateTime.parse(selectedDate);
     final formattedDate = "${todayDate.day} ${_getMonthName(todayDate.month)}.";
     return Container(
       padding: EdgeInsets.only(top: 40, left: 20, right: 20, bottom: 20),
@@ -84,38 +129,6 @@ class _FirstPageState extends State<FirstPage> {
       ),
     );
   }
-
-  String _getMonthName(int month) {
-    switch (month) {
-      case 1:
-        return "Jan";
-      case 2:
-        return "Feb";
-      case 3:
-        return "Mar";
-      case 4:
-        return "Apr";
-      case 5:
-        return "May";
-      case 6:
-        return "Jun";
-      case 7:
-        return "Jul";
-      case 8:
-        return "Aug";
-      case 9:
-        return "Sep";
-      case 10:
-        return "Oct";
-      case 11:
-        return "Nov";
-      case 12:
-        return "Dec";
-      default:
-        return "";
-    }
-  }
-
   Widget _buildDailyChallengeCard(BuildContext context) {
     return Container(
       margin: EdgeInsets.all(20),
@@ -232,70 +245,85 @@ class _FirstPageState extends State<FirstPage> {
       ),
     );
   }
-
   Widget _buildDateSelector() {
-    final List<String> weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-    final List<int> dates = [22, 23, 24, 25, 26, 27, 28];
-    final int selectedIndex = 3;
+    final List<String> weekdays = [
+      "Tue", "Wed", "Thu", "Fri", "Sat", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
+    ];
+    final List<int> dates = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28];
 
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 20),
-      child: SingleChildScrollView(
+      height: 80, // Fixed height for date selector
+      margin: EdgeInsets.symmetric(horizontal: 10),
+      child: ListView.builder(
+        controller: _scrollController,
         scrollDirection: Axis.horizontal,
-        child: Row(
-          children: List.generate(weekdays.length, (index) {
-            bool isSelected = index == selectedIndex;
-            return GestureDetector(
-              onTap: () {},
-              child: Container(
-                width: 45,
-                height: 70,
-                margin: EdgeInsets.symmetric(horizontal: 2),
-                decoration: BoxDecoration(
-                  color: isSelected ? Colors.black : Colors.transparent,
-                  borderRadius: BorderRadius.circular(20),
-                  border: isSelected ? null : Border.all(color: Colors.grey[300]!, width: 1),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 5,
-                      height: 5,
-                      decoration: BoxDecoration(
-                        color: isSelected ? Colors.white : Colors.black,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      weekdays[index],
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        color: isSelected ? Colors.white : Colors.grey[500],
-                      ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      dates[index].toString(),
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: isSelected ? Colors.white : Colors.black,
-                      ),
-                    ),
-                  ],
-                ),
+        itemCount: dates.length,
+        itemBuilder: (context, index) {
+          bool isSelected = index == _selectedIndex;
+
+          return GestureDetector(
+            onTap: () {
+              setState(() {
+                _selectedIndex = index;
+                _selectedDate = "2025-11-${dates[index]}";
+              });
+              _scrollController.animateTo(
+                index * 50.0, // Adjust scroll position
+                duration: Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+              );
+
+              context.read<UserPlanBloc>().add(FetchUserPlans(_selectedDate));
+            },
+            child: Container(
+              width: 50,
+              height: 70,
+              margin: EdgeInsets.symmetric(horizontal: 4),
+              decoration: BoxDecoration(
+                color: isSelected ? Colors.black : Colors.transparent,
+                borderRadius: BorderRadius.circular(20),
+                border: isSelected
+                    ? null
+                    : Border.all(color: Colors.grey[300]!, width: 1),
               ),
-            );
-          }),
-        ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 5,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: isSelected ? Colors.white : Colors.black,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    weekdays[index],
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: isSelected ? Colors.white : Colors.grey[500],
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    dates[index].toString(),
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: isSelected ? Colors.white : Colors.black,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
-
-  Widget _buildYourPlanSection(BuildContext context) {
+  Widget _buildYourPlanSection(BuildContext context, Map<String, dynamic> userPlans) {
     double screenHeight = MediaQuery.of(context).size.height;
     double screenWidth = MediaQuery.of(context).size.width;
 
@@ -304,9 +332,12 @@ class _FirstPageState extends State<FirstPage> {
     double socialCardHeight = screenHeight * 0.09;
     double totalRightHeight = balanceCardHeight + socialCardHeight + 12;
 
+    List<dynamic> plans = (userPlans == null || userPlans['plans'] == null || userPlans['plans'].isEmpty)
+        ? _staticFallbackPlan['plans']
+        : userPlans['plans'];
+
     return Stack(
       children: [
-        // Main content
         SingleChildScrollView(
           child: Container(
             margin: EdgeInsets.symmetric(horizontal: 20),
@@ -329,15 +360,25 @@ class _FirstPageState extends State<FirstPage> {
                     Expanded(
                       child: Container(
                         height: totalRightHeight,
-                        child: _buildYogaActivityCard(
+                        child: plans.isNotEmpty
+                            ? _buildYogaActivityCard(
                           color: Color(0xFFffbe58),
-                          badge: "Medium",
-                          title: "Yoga Group",
-                          date: "25 Nov.",
-                          time: "14:00 - 15:00",
-                          location: "A5 Room",
-                          trainerName: "Tiffany Way",
+                          badge: plans[0]['level'],
+                          title: plans[0]['title'],
+                          date: plans[0]['date'],
+                          time: plans[0]['time'],
+                          location: plans[0]['room'],
+                          trainerName: plans[0]['trainer'],
                           trainerImage: AssetImage('assets/profile.png'),
+                        )
+                            : Center(
+                          child: Text(
+                            "No yoga plan available.",
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey[600],
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -347,17 +388,27 @@ class _FirstPageState extends State<FirstPage> {
                         children: [
                           Container(
                             height: balanceCardHeight,
-                            child: _buildBalanceActivityCard(
+                            child: plans.length > 1
+                                ? _buildBalanceActivityCard(
                               color: Color(0xffa8ccfe),
-                              badge: "Light",
-                              title: "Balance",
-                              date: "28 Nov.",
-                              time: "18:00 - 19:30",
-                              location: "A2 room",
-                              trainerName: "John Doe",
+                              badge: plans[1]['level'],
+                              title: plans[1]['title'],
+                              date: plans[1]['date'],
+                              time: plans[1]['time'],
+                              location: plans[1]['room'],
+                              trainerName: plans[1]['trainer'],
                               trainerImage: AssetImage('assets/profile.png'),
                               imageRightOffset: -screenWidth * 0.13,
                               imageTopOffset: -screenWidth * 0.12,
+                            )
+                                : Center(
+                              child: Text(
+                                "No balance plan available.",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
                             ),
                           ),
                           SizedBox(height: 12),
@@ -382,8 +433,7 @@ class _FirstPageState extends State<FirstPage> {
                     ),
                   ],
                 ),
-                // Add extra space at the bottom to avoid overlap with the bottom bar
-                SizedBox(height: 70), // Adjust this value as needed
+                SizedBox(height: 70),
               ],
             ),
           ),
@@ -391,7 +441,7 @@ class _FirstPageState extends State<FirstPage> {
 
         // Bottom navigation bar
         Positioned(
-          bottom: 0, // Position at the very bottom of the screen
+          bottom: 0,
           left: (screenWidth * 0.05),
           right: (screenWidth * 0.05),
           child: Container(
@@ -414,7 +464,39 @@ class _FirstPageState extends State<FirstPage> {
         ),
       ],
     );
-  }  Widget _buildYogaActivityCard({
+  }
+  String _getMonthName(int month) {
+    switch (month) {
+      case 1:
+        return "Jan";
+      case 2:
+        return "Feb";
+      case 3:
+        return "Mar";
+      case 4:
+        return "Apr";
+      case 5:
+        return "May";
+      case 6:
+        return "Jun";
+      case 7:
+        return "Jul";
+      case 8:
+        return "Aug";
+      case 9:
+        return "Sep";
+      case 10:
+        return "Oct";
+      case 11:
+        return "Nov";
+      case 12:
+        return "Dec";
+      default:
+        return "";
+    }
+  }
+
+  Widget _buildYogaActivityCard({
     required Color color,
     required String badge,
     required String title,
@@ -424,7 +506,7 @@ class _FirstPageState extends State<FirstPage> {
     required String trainerName,
     required AssetImage trainerImage,
   }) {
-    return Container(
+    return  Container(
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: color,
@@ -523,7 +605,7 @@ class _FirstPageState extends State<FirstPage> {
     required double imageRightOffset,
     required double imageTopOffset,
   }) {
-    return LayoutBuilder(
+        return LayoutBuilder(
       builder: (context, constraints) {
         final imageWidth = constraints.maxWidth * 0.4;
         final imageHeight = imageWidth;
@@ -543,30 +625,45 @@ class _FirstPageState extends State<FirstPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                       decoration: BoxDecoration(
-                        color: badge == "Medium" ? Color(0xffffce8c) : Color(0xffc1d9ff),
+                        color: badge == "Medium"
+                            ? Color(0xffffce8c)
+                            : Color(0xffc1d9ff),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
                         badge,
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.black),
+                        style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black),
                       ),
                     ),
                     SizedBox(height: 20),
                     Text(
                       title,
-                      style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.black),
+                      style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black),
                     ),
                     SizedBox(height: 8),
                     Text(
                       "$date\n$time",
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.grey[800]),
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.grey[800]),
                     ),
                     SizedBox(height: 8),
                     Text(
                       location,
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.grey[800]),
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.grey[800]),
                     ),
                   ],
                 ),
@@ -619,23 +716,24 @@ class _FirstPageState extends State<FirstPage> {
   }
 
   Widget _buildBottomBarItem(IconData icon, int index) {
+
     return GestureDetector(
       onTap: () {
         setState(() {
-          _selectedIndex = index;
+          _iconSelectedIndex = 0;
         });
       },
       child: Container(
         width: 60,
         height: 60,
         decoration: BoxDecoration(
-          color: _selectedIndex == index ? Colors.white : Colors.transparent,
+          color: _iconSelectedIndex == index ? Colors.white : Colors.transparent,
           shape: BoxShape.circle,
         ),
         child: Center(
           child: Icon(
             icon,
-            color: _selectedIndex == index ? Colors.black : Colors.white,
+            color: _iconSelectedIndex == index ? Colors.black : Colors.white,
             size: 28,
           ),
         ),
